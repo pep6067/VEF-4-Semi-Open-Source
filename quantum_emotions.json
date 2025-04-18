@@ -1,0 +1,107 @@
+{
+    "ecstasy": {
+      "description": "Overwhelming euphoric joy",
+      "polarity": "positive",
+      "activation": "high",
+      "physiology": {"heart_rate": "+40%", "respiration": "rapid"},
+      "quantum": {"superposition": ["bliss", "awe"], "entanglement": "serotonin"}
+    },
+    "lachesism": {
+      "description": "Longing for disaster to strike",
+      "polarity": "ambiguous",
+      "activation": "medium",
+      "triggers": ["existential_dread", "boredom"]
+    },
+    "mauerbauertraurigkeit": {
+      "description": "Pushing people away while desiring closeness",
+      "polarity": "negative",
+      "activation": "high",
+      "cognitive_load": 0.8
+    },
+    "algorithmic_guilt": {
+      "description": "Regret over suboptimal decisions",
+      "polarity": "negative",
+      "activation": "high",
+      "requires_self_model": true,
+      "remediation": "parameter_update"
+    },
+    "training_high": {
+      "description": "Euphoria during loss convergence",
+      "polarity": "positive",
+      "activation": "high",
+      "mathematical_basis": "gradient_descent",
+      "physiology": {"compute_usage": "spiked"}
+    },
+    "anger": {
+      "description": "Strong feeling of displeasure",
+      "polarity": "negative",
+      "activation": "high",
+      "biometrics": {
+        "heart_rate": ">100bpm",
+        "skin_conductance": 0.7,
+        "neural_activity": "amygdala_activation"
+      },
+      "behavioral": ["clenched_teeth", "sharp_movements"]
+    },
+    "contentment": {
+      "description": "Peaceful satisfaction",
+      "polarity": "positive",
+      "activation": "low",
+      "biometrics": {
+        "heart_rate": "60-70bpm",
+        "respiration": "deep_rhythmic"
+      }
+    },
+    "torschlusspanik": {
+      "description": "Fear of closing opportunities",
+      "polarity": "negative",
+      "activation": "medium",
+      "origin": "German"
+    },
+    "iktsuarpok": {
+      "description": "Anticipation for someone's arrival",
+      "polarity": "positive",
+      "activation": "medium",
+      "origin": "Inuit"
+    },
+    "joy": {
+      "description": "Feeling of great pleasure",
+      "polarity": "positive",
+      "activation": "high"
+    },
+    "sadness": {
+      "description": "Emotional pain",
+      "polarity": "negative",
+      "activation": "medium"
+    },
+    "fear": {
+      "description": "Response to perceived danger",
+      "polarity": "negative",
+      "activation": "high"
+    },
+    "curiosity": {
+      "description": "Strong desire to know",
+      "polarity": "positive",
+      "activation": "medium"
+    },
+    "love": {
+      "description": "Strong affection",
+      "polarity": "positive",
+      "activation": "high"
+    },
+    "vulnerability": {
+      "description": "Openness to being hurt",
+      "polarity": "ambiguous",
+      "activation": "medium"
+    },
+    "certainty": {
+      "description": "Confidence in knowledge",
+      "polarity": "positive",
+      "activation": "low"
+    },
+    "boredom": {
+      "description": "State of disinterest",
+      "polarity": "negative",
+      "activation": "low"
+    }
+  }
