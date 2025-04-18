@@ -22,7 +22,7 @@ PHYSIO_UPDATE_INTERVAL = 5
 class HumanLikeEmotionEngine:
     def __init__(self):
         # Initialize Gemini API
-        gemini_api_key = "AIzaSyC7MbxbnA1NnWYbCMXfA8bNtzYdMe7g6mU"  # Replace with your Gemini API key
+        gemini_api_key = "Your_GEMINI_Api"  # Replace with your Gemini API key
         genai.configure(api_key=gemini_api_key)
         
         # Set up the Gemini model
