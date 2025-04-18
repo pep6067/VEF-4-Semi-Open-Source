@@ -29,4 +29,4 @@
 If you use or reference this work, please cite:
 
 Ian Deepak Patel, founder of: Spyder Sync and Anthromorph
-Follow on X: https://x.com/_IanPatel_
+Follow on X: https://x.com/IanPatel
