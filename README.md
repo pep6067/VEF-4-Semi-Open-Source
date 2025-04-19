@@ -5,6 +5,11 @@
 🔮 **This is a partial open-source release** to timestamp and showcase the foundational architecture behind VEF. Full version is available under proprietary license.
 
 ---
+## Benchmarking VEF-5 vs ChatGPT-4o
+![benchmark_chart](https://github.com/user-attachments/assets/b27b639b-915b-4e39-b529-7a31bc6eee80)
+VEF-5 = 70B
+ChatGPT-4o = ~ 100B–200B
+
 
 ## 🧠 Core Concepts
 
