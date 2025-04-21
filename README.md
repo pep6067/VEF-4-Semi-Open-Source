@@ -23,8 +23,7 @@ ChatGPT-4o = ~ 100B–200B
 
 ## 🧬 System Components (Preview)
 
-- `emotion_engine.py` — Loads vectors, computes emotional weights
-- `generate_response.py` — Example integration with a local LLM
+- `VEF-opensource.py` — Example integration with Gemini API
 - `quantum_emotions.json` — Truncated emotion embedding set
 
 ---
