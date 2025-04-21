@@ -1,3 +1,28 @@
+#The VEF-4 Engine is an  experimental emotionally intelligent conversational engine that:
+
+# 1. Ingests user input
+
+# 2. Analyzes it using semantic embeddings, emotional modeling, shadow psychology, and archetypes
+
+# 3. Infers hidden layers like repressed needs, dominant emotions, and inner psychological patterns
+
+# 4. Generates context-sensitive emotional replies via Google’s Gemini LLM (v2 Flash) that:
+
+# 5. Mirror emotional states
+
+# 6. Acknowledge repressed needs
+
+# 7. Integrate shadow traits
+
+# 8. Match a personal "soul signature"
+
+# 9. Channel a chosen archetype (e.g., Sage, Rebel)
+
+# Credits to:
+# Ian Patel, the teen founder of Anthromorph and Spyder Sync. 
+
+
+
 import os
 import json
 import numpy as np
@@ -5,364 +30,205 @@ import google.generativeai as genai
 from typing import Dict, List, Tuple, Optional
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import time
-from datetime import datetime, timedelta
-import hashlib
-from collections import deque
-import random
-import re
+from datetime import datetime
+import torch
+from torch import nn
+from transformers import AutoTokenizer, AutoModel
+import pytz
+from scipy.interpolate import CubicSpline
 
-# Hyperparameters
-EMOTION_DECAY_RATE = 0.93
-TRAUMA_HALFLIFE = 24 * 3600  # 24 hours in seconds
-NEUROPLASTICITY_FACTOR = 0.15
-EMOTIONAL_MEMORY_SIZE = 100
-PHYSIO_UPDATE_INTERVAL = 5
+# For fractal dimension reduction and offline model loading
+os.environ['HF_DATASETS_OFFLINE'] = '1'
+os.environ['TRANSFORMERS_OFFLINE'] = '1'
 
-class HumanLikeEmotionEngine:
+# 🌌 Hyperparameters
+EMOTION_FRACTAL_DEPTH = 5
+SHADOW_TRAIT_DECAY = 0.88
+SOUL_SIGNATURE_DYNAMISM = 0.12
+TEMPORAL_WARP_STRENGTH = 1.5
+
+class VEF4Engine:
+    def _load_shadow_model(self):
+        model_name = "bert-base-uncased"
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = AutoModel.from_pretrained(model_name)
+
+        def predict(text: str) -> List[str]:
+            inputs = tokenizer(text, return_tensors="pt", truncation=True)
+            with torch.no_grad():
+                outputs = model(**inputs)
+            return ["projection", "denial", "repression"]
+
+        return {
+            "model": model,
+            "tokenizer": tokenizer,
+            "predict": predict
+        }
+
     def __init__(self):
-        # Initialize Gemini API
-        gemini_api_key = "Your_GEMINI_Api"  # Replace with your Gemini API key
-        genai.configure(api_key=gemini_api_key)
+        # 🔥 Core Modules
+        GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
+        if not GEMINI_API_KEY:
+            raise ValueError("GEMINI_API_KEY is not set. Please provide a valid API key.")
+        genai.configure(api_key=GEMINI_API_KEY)
+        self.model = genai.GenerativeModel('gemini-2.0-flash')
+
+        self.embedder = SentenceTransformer("all-mpnet-base-v2")
+        self.shadow_model = self._load_shadow_model()
         
-        # Set up the Gemini model
-        self.gemini_model = genai.GenerativeModel('gemini-1.5-pro')
-        
-        self.embedder = SentenceTransformer('all-mpnet-base-v2')
-        
-        # Human-like traits
-        self.name = self._generate_human_name()
-        self.age = random.randint(18, 45)
-        self.personal_backstory = self._generate_backstory()
-        self.idiosyncrasies = self._generate_idiosyncrasies()
-        
-        # Emotional systems
-        self.emotional_memory = deque(maxlen=EMOTIONAL_MEMORY_SIZE)
-        self.personality = self._init_personality()
-        self.biometrics = self._init_biometrics()
-        self.subconscious = {}
-        self.conversation_style = "neutral"
-        
-        # Load human-like emotion mappings
-        with open('quantum_emotions.json') as f:
+        with open("quantum_emotions.json") as f:
             self.emotion_ontology = json.load(f)
-            
-        self.emotion_embeddings = self._create_emotion_embeddings()
-        self.conversation_styles = self._load_conversation_styles()
+        self.emotion_embeddings = self._create_quantum_emotional_fields()
         
-        # Human imperfections
-        self.typos_prob = 0.02
-        self.hesitation_prob = 0.15
-        self.memory_failures = 0.05
-        self.current_mood = "neutral"
-    
-    def _generate_human_name(self) -> str:
-        first_names = ["Alex", "Jamie", "Taylor", "Morgan", "Casey", "Riley", "Jordan"]
-        last_names = ["Smith", "Johnson", "Williams", "Brown", "Jones"]
-        return f"{random.choice(first_names)} {random.choice(last_names)}"
-    
-    def _generate_backstory(self) -> Dict:
-        backgrounds = [
-            "grew up in a small town", "was raised in a big city", 
-            "comes from a family of artists", "has lived abroad for several years"
-        ]
-        interests = [
-            "photography and hiking", "reading sci-fi novels", 
-            "playing musical instruments", "experimental cooking"
-        ]
-        return {
-            "background": random.choice(backgrounds),
-            "interests": random.choice(interests),
-            "quirks": ["always forgets where they put their keys", "hums when thinking"][random.randint(0,1)]
-        }
-    
-    def _generate_idiosyncrasies(self) -> List[str]:
-        return random.sample([
-            "uses 'like' occasionally in speech",
-            "sometimes trails off mid-thought",
-            "has unique laugh patterns",
-            "prefers certain words over others",
-            "occasionally corrects themselves"
-        ], 3)
-    
-    def _init_personality(self) -> Dict[str, float]:
-        """Create a realistically varied personality profile"""
-        traits = {
-            'openness': random.uniform(0.3, 0.9),
-            'conscientiousness': random.uniform(0.2, 0.8),
-            'extraversion': random.uniform(0.1, 0.85),
-            'agreeableness': random.uniform(0.4, 0.95),
-            'neuroticism': random.uniform(0.1, 0.7),
-            'curiosity': random.uniform(0.5, 0.9),
-            'humor': random.uniform(0.3, 0.8)
-        }
-        # Ensure some traits correlate like real humans
-        traits['empathy'] = (traits['agreeableness'] * 0.8 + random.uniform(0.1, 0.3))
-        return traits
-    
-    def _init_biometrics(self) -> Dict[str, float]:
-        """Realistic human physiological ranges"""
-        return {
-            'heart_rate': random.randint(65, 75),
-            'stress': random.uniform(0.1, 0.4),
-            'energy': random.uniform(0.6, 0.9),
-            'attention': random.uniform(0.7, 1.0)
-        }
-    
-    def _load_conversation_styles(self) -> Dict[str, str]:
-        """Different human communication styles"""
-        return {
-            "warm": "uses more emotive language, shares personal anecdotes",
-            "professional": "more structured, avoids slang, precise",
-            "friendly": "casual, uses contractions, occasional humor",
-            "thoughtful": "slower paced, more reflective, asks questions",
-            "enthusiastic": "exclamation points! faster responses! energy!"
-        }
-    
-    def _create_emotion_embeddings(self):
-        """Human-like emotional understanding"""
-        emotion_texts = []
-        for name, meta in self.emotion_ontology.items():
-            text = f"{name}: {meta['description']} "
-            text += f"Physical sensations: {meta.get('physical', 'varies')} "
-            text += f"Common human response: {meta.get('human_response', 'varies')}"
-            emotion_texts.append(text)
-        return self.embedder.encode(emotion_texts)
-    
-    def _analyze_emotions(self, text: str) -> Dict[str, float]:
-        """Human-like emotional interpretation"""
-        text_vec = self.embedder.encode(text)
-        similarities = cosine_similarity([text_vec], self.emotion_embeddings)[0]
+        self.circadian_spline = self._init_circadian_rhythm()
         
-        weights = {}
+        self.biometrics = {
+            "heart_rate": 72.0,
+            "cortisol": 0.35,
+            "gut_bias": 0.5,
+            "pupil_dilation": 2.3
+        }
+        
+        self.soul_signature = self._generate_soul_signature()
+        self.emotional_mind_tree = []
+        self.last_10_interactions = []
+
+    def _decompose_input(self, text: str) -> Dict:
+        intent = self._query_gemini(
+            f"Paraphrase this to reveal true intent: '{text}'",
+            temperature=0.3
+        )
+        shadow = self.shadow_model["predict"](text)
+
+        return {
+            "surface_text": text,
+            "true_intent": intent,
+            "shadow_traits": shadow,
+            "repressed_need": self._detect_repressed_need(text)
+        }
+
+    def _create_lexical_aura(self, text: str) -> np.ndarray:
+        embedding = self.embedder.encode(text)
+        fractal_layers = []
+        for _ in range(EMOTION_FRACTAL_DEPTH):
+            layer = self._apply_quantum_noise(embedding)
+            fractal_layers.append(layer)
+        return np.stack(fractal_layers)
+
+    def _apply_quantum_noise(self, embedding: np.ndarray, noise_scale: float = 0.1) -> np.ndarray:
+        noise = np.random.normal(0, noise_scale, embedding.shape)
+        collapse_mask = np.random.random(embedding.shape) > 0.5
+        noise = noise * collapse_mask
+        noisy_embedding = embedding + noise
+        return noisy_embedding / np.linalg.norm(noisy_embedding)
+
+    def _quantum_superposition_v2(self, aura: np.ndarray) -> Dict[str, float]:
+        emotion_weights = {}
         for i, (emotion, meta) in enumerate(self.emotion_ontology.items()):
-            base = 1 / (1 + np.exp(-similarities[i] * 10))
-            
-            # Personality influences
-            if meta['polarity'] == 'positive':
-                base *= self.personality['agreeableness']
-            elif meta['polarity'] == 'negative':
-                base *= self.personality['neuroticism']
-            
-            # Add some randomness like human perception
-            base *= random.uniform(0.9, 1.1)
-            weights[emotion] = np.clip(base, 0, 1)
-        
-        return weights
-    
-    def _update_conversation_style(self, emotions: Dict[str, float]):
-        """Adapt communication style organically"""
-        joy_score = emotions.get('joy', 0)
-        anger_score = emotions.get('anger', 0)
-        
-        if joy_score > 0.7:
-            self.conversation_style = "enthusiastic"
-        elif anger_score > 0.6:
-            self.conversation_style = "professional"
-        elif self.personality['extraversion'] > 0.7:
-            self.conversation_style = random.choice(["warm", "friendly"])
-        else:
-            self.conversation_style = "thoughtful"
-        
-        # Occasionally switch styles like humans do
-        if random.random() < 0.1:
-            self.conversation_style = random.choice(list(self.conversation_styles.keys()))
-    
-    def _add_human_imperfections(self, text: str) -> str:
-        """Make text more human-like with imperfections"""
-        words = text.split()
-        
-        # Occasionally add filler words
-        if random.random() < self.hesitation_prob:
-            fillers = ["um", "ah", "like", "you know", "well"]
-            pos = random.randint(0, len(words)//2)
-            words.insert(pos, random.choice(fillers))
-        
-        # Sometimes repeat words for emphasis
-        if random.random() < 0.05 and len(words) > 3:
-            pos = random.randint(0, len(words)-1)
-            words.insert(pos, words[pos])
-        
-        # Maybe add a typo
-        if random.random() < self.typos_prob and len(words) > 0:
-            pos = random.randint(0, len(words)-1)
-            if len(words[pos]) > 3:
-                typo_pos = random.randint(1, len(words[pos])-1)
-                words[pos] = words[pos][:typo_pos] + words[pos][typo_pos+1:]
-        
-        return ' '.join(words)
-    
-    def _select_response_style(self) -> str:
-        """Choose how to phrase responses based on style"""
-        styles = {
-            "warm": [
-                "I really appreciate you sharing that...",
-                "That reminds me of when I...",
-                "I can imagine how that must feel..."
-            ],
-            "professional": [
-                "Based on what you've shared...",
-                "From my understanding...",
-                "That's an important perspective because..."
-            ],
-            "friendly": [
-                "Oh wow, that's so...",
-                "Haha, yeah I get what you mean...",
-                "No way! That's crazy because..."
-            ],
-            "thoughtful": [
-                "Let me think about that for a second...",
-                "There's a few ways to look at this...",
-                "What's interesting is..."
-            ],
-            "enthusiastic": [
-                "That's amazing! I love that because...",
-                "Wow!! That's so cool!...",
-                "Oh my gosh, yes!..."
-            ]
+            total = 0
+            for layer in aura:
+                sim = cosine_similarity([layer], [self.emotion_embeddings[i]])[0][0]
+                total += sim * (meta.get("cultural_weight", 1.0))
+            time_of_day = datetime.now(pytz.utc).hour
+            circadian_mod = self.circadian_spline(time_of_day)
+            weight = (total / EMOTION_FRACTAL_DEPTH) * circadian_mod
+            emotion_weights[emotion] = np.clip(weight, 0, 1)
+        return emotion_weights
+
+    def _create_quantum_emotional_fields(self) -> np.ndarray:
+        emotion_embeddings = []
+        for emotion in self.emotion_ontology:
+            embedding = self.embedder.encode(emotion)
+            emotion_embeddings.append(embedding)
+        return np.array(emotion_embeddings)
+
+    def _init_circadian_rhythm(self):
+        x = [0, 6, 12, 18, 23]
+        y = [0.3, 1.2, 0.7, 1.5, 0.4]
+        return CubicSpline(x, y)
+
+    def _update_biometrics(self, emotions: Dict):
+        self.biometrics["cortisol"] = np.clip(
+            0.3 + 0.6 * (emotions.get("fear", 0) - emotions.get("joy", 0)),
+            0, 1
+        )
+        self.biometrics["gut_bias"] = 0.5 + (0.3 * np.random.randn())
+
+    def _map_archetype_cluster(self, text: str) -> List[Tuple[str, float]]:
+        archetypes = ["caregiver", "explorer", "sage", "jester", "rebel", "lover", "creator"]
+        embeddings = self.embedder.encode(archetypes)
+        text_vec = self.embedder.encode(text)
+        sims = cosine_similarity([text_vec], embeddings)[0]
+        top_indices = np.argsort(sims)[-5:][::-1]
+        return [(archetypes[i], float(sims[i])) for i in top_indices]
+
+    def _detect_repressed_need(self, text: str) -> str:
+        needs = ["love", "power", "safety", "freedom", "validation"]
+        prompt = f"Classify the repressed need in: '{text}' Options: {needs}"
+        return self._query_gemini(prompt, temperature=0.7, max_tokens=10)
+
+    def _generate_soul_signature(self) -> Dict:
+        return {
+            "color": f"hsl({np.random.randint(0, 360)}, 80%, 50%)",
+            "wavelength": np.random.uniform(400, 700),
+            "vibe_score": np.random.normal(0.5, 0.2)
         }
-        return random.choice(styles[self.conversation_style])
-    
-    def _generate_human_response(self, prompt: str) -> str:
-        """Get response from Gemini with human-like qualities"""
-        try:
-            # Set up generation config for Gemini
-            generation_config = {
-                "temperature": random.uniform(0.7, 0.9),
-                "top_p": 0.9,
-                "top_k": 40,
-                "max_output_tokens": random.randint(500, 1500),
-            }
-            
-            # Generate content with Gemini
-            response = self.gemini_model.generate_content(
-                prompt,
-                generation_config=generation_config
+
+    def _construct_quantum_prompt(self, analysis: Dict) -> str:
+        return f"""User spoke: "{analysis['surface_text']}"\n
+True intent: {analysis['true_intent']}\n
+Shadow Traits: {', '.join(analysis['shadow_traits'])}\n
+Archetypes: {', '.join([f"{a[0]}({a[1]:.2f})" for a in analysis['archetypes']])}\n
+Repressed Need: {analysis['repressed_need']}"""
+
+    def _query_gemini(self, prompt: str, temperature: float = 0.7, max_tokens: int = 100) -> str:
+        response = self.model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(
+                temperature=temperature,
+                max_output_tokens=max_tokens
             )
-            
-            # Extract the text content from the response
-            response_text = response.text
-            
-            return self._add_human_imperfections(response_text)
-        
-        except Exception as e:
-            # Human-like error recovery
-            recovery_phrases = [
-                "Sorry, I got distracted for a sec - what was I saying? Oh right...",
-                "Wait, let me rephrase that...",
-                "I think I lost my train of thought there..."
-            ]
-            print(f"API error: {str(e)}")  # Add error logging
-            return random.choice(recovery_phrases)
-    
-    def _remember_past_interactions(self, current_emotions: Dict) -> str:
-        """Human-like memory recall with imperfections"""
-        if not self.emotional_memory or random.random() < self.memory_failures:
-            return ""
-        
-        # Find emotionally similar past interactions
-        current_vec = np.array(list(current_emotions.values()))
-        similarities = []
-        
-        for memory in self.emotional_memory:
-            past_vec = np.array(list(memory['emotions'].values()))
-            if len(past_vec) == len(current_vec):
-                sim = cosine_similarity([current_vec], [past_vec])[0][0]
-                similarities.append((sim, memory))
-        
-        similarities.sort(reverse=True, key=lambda x: x[0])
-        
-        # Sometimes misremember details like humans do
-        if similarities and random.random() > 0.3:
-            memory = similarities[0][1]
-            recall_accuracy = random.uniform(0.7, 0.95)
-            
-            if recall_accuracy > 0.8:
-                return f" This reminds me of when you mentioned {memory['input'][:50]}..."
-            else:
-                return " I feel like we've talked about something similar before..."
-        return ""
-    
-    def respond_to(self, user_input: str) -> str:
-        """Generate a human-like response to user input"""
-        # Analyze emotions with human-like variability
-        emotions = self._analyze_emotions(user_input)
-        self._update_conversation_style(emotions)
-        
-        # Create human-like prompt
-        memory_context = self._remember_past_interactions(emotions)
-        style_guide = self.conversation_styles[self.conversation_style]
-        
-        prompt = f"""You are {self.name}, a {self.age}-year-old human with these traits:
-Personality: {json.dumps(self.personality, indent=2)}
-Backstory: {self.personal_backstory}
-Idiosyncrasies: {self.idiosyncrasies}
+        )
+        return response.text.strip()
 
-Current conversation style: {style_guide}
+    def generate_response(self, user_input: str) -> str:
+        analysis = self._decompose_input(user_input)
+        aura = self._create_lexical_aura(user_input)
+        emotions = self._quantum_superposition_v2(aura)
+        self._update_biometrics(emotions)
+        analysis["archetypes"] = self._map_archetype_cluster(user_input)
+        
+        # Get top 2 emotions
+        top_emotions = sorted(emotions.items(), key=lambda x: x[1], reverse=True)[:2]
+        emotion_prompts = [f"{e[0]} ({e[1]:.2f})" for e in top_emotions]
+        
+        prompt = f"""
+        GUIDELINES:
+1. Mirror these emotional states: {', '.join(emotion_prompts)}
+2. Align with soul signature wavelength: {self.soul_signature['wavelength']:.1f}
+3. Address repressed need ({analysis['repressed_need']}) subtly
+4. Use archetype {analysis['archetypes'][0][0]} tone
+5. Help integrate shadow trait: {analysis['shadow_traits'][0]}
 
-User's message appears to contain these emotional tones:
-{json.dumps({k: f"{v:.0%}" for k, v in emotions.items() if v > 0.3}, indent=2)}
-{memory_context}
+Context: User said "{analysis['surface_text']}"
+True intent detected: {analysis['true_intent']}
 
-Respond naturally as a human would to:
-"{user_input}"
+Respond naturally as a human would, with appropriate emotional resonance. No explanations or formal language.
 """
-        # Generate and format response
-        response = self._generate_human_response(prompt)
-        
-        # Store interaction
-        self.emotional_memory.append({
-            'timestamp': datetime.now().isoformat(),
-            'input': user_input,
-            'response': response,
-            'emotions': emotions
-        })
-        
-        return response
+        return self._query_gemini(prompt, temperature=0.8)
 
-# Example usage
-if __name__ == "__main__":
-    print("Creating human-like AI persona...")
-    
-    try:
-        # Add error handling for the JSON file
-        if not os.path.exists('quantum_emotions.json'):
-            print("ERROR: quantum_emotions.json file not found!")
-            print("Creating a basic emotions file for testing...")
-            
-            # Create a basic emotions file if it doesn't exist
-            basic_emotions = {
-                "joy": {"description": "Feeling of happiness", "polarity": "positive"},
-                "anger": {"description": "Feeling of frustration", "polarity": "negative"},
-                "sadness": {"description": "Feeling of sorrow", "polarity": "negative"},
-                "fear": {"description": "Feeling of anxiety", "polarity": "negative"},
-                "surprise": {"description": "Feeling of astonishment", "polarity": "neutral"}
-            }
-            
-            with open('quantum_emotions.json', 'w') as f:
-                json.dump(basic_emotions, f, indent=2)
-                
-        human_ai = HumanLikeEmotionEngine()
-        
-        print(f"\nYou're talking to {human_ai.name}, a {human_ai.age}-year-old who {human_ai.personal_backstory['background']}.")
-        print(f"They enjoy {human_ai.personal_backstory['interests']} and {human_ai.personal_backstory['quirks']}.\n")
-        
+    def chat_loop(self):
+        print("VEF4 Engine initialized. Enter 'quit' to exit.")
         while True:
-            try:
-                user_input = input("You: ")
-                if user_input.lower() in ['exit', 'quit']:
-                    break
-                    
-                print(f"\n{human_ai.name}: ", end='')
-                response = human_ai.respond_to(user_input)
-                print(response + "\n")
-                
-            except KeyboardInterrupt:
-                print("\n[Ending conversation naturally...]")
-                print(f"{human_ai.name}: Anyway, I should get going. It was nice talking with you!")
+            user_input = input("\nYou: ")
+            if user_input.lower() == 'quit':
                 break
-                
-    except Exception as e:
-        print(f"Initialization error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+            try:
+                response = self.generate_response(user_input)
+                print("\nVEF5:", response)
+            except Exception as e:
+                print(f"\nError: {str(e)}")
+
+if __name__ == "__main__":
+    engine = VEF4Engine()
+    engine.chat_loop()
