@@ -1,4 +1,4 @@
-# Virtual Emotional Fabric (VEF) - HYPER HYPE Release
+# Virtual Emotional Fabric (VEF) - Open-source Release
 
 **VEF** is an experimental emotion-aware framework developed by **Spyder Sync** that enhances large language models (LLMs) with **emotional intelligence**, **neuroplastic memory**, and **archetypal resonance**.
 
